@@ -47,6 +47,7 @@ import packageJson from "../../../package.json";
 import { getTempToken, updateUserConfig } from "../../utils/request/user";
 import i18n from "../../i18n";
 import { getNotification } from "../../utils/request/common";
+import { isSelfHostedMode } from "../../utils/selfHosted";
 declare var window: any;
 
 class Header extends React.Component<HeaderProps, HeaderState> {
@@ -156,22 +157,24 @@ class Header extends React.Component<HeaderProps, HeaderState> {
       });
     } else {
       await upgradeConfig();
-      const status = await LocalFileManager.getPermissionStatus();
-      if (
-        !ConfigService.getItem("isUseLocal") &&
-        LocalFileManager.isSupported()
-      ) {
-        this.props.handleLocalFileDialog(true);
-      } else if (
-        ConfigService.getItem("isUseLocal") === "yes" &&
-        !status.directoryName
-      ) {
-        this.props.handleLocalFileDialog(true);
-      } else if (
-        ConfigService.getItem("isUseLocal") === "yes" &&
-        (status.needsReauthorization || !status.hasAccess)
-      ) {
-        this.props.handleLocalFileDialog(true);
+      if (!isSelfHostedMode()) {
+        const status = await LocalFileManager.getPermissionStatus();
+        if (
+          !ConfigService.getItem("isUseLocal") &&
+          LocalFileManager.isSupported()
+        ) {
+          this.props.handleLocalFileDialog(true);
+        } else if (
+          ConfigService.getItem("isUseLocal") === "yes" &&
+          !status.directoryName
+        ) {
+          this.props.handleLocalFileDialog(true);
+        } else if (
+          ConfigService.getItem("isUseLocal") === "yes" &&
+          (status.needsReauthorization || !status.hasAccess)
+        ) {
+          this.props.handleLocalFileDialog(true);
+        }
       }
     }
     this.resizeHandler = throttle(() => {
@@ -194,6 +197,12 @@ class Header extends React.Component<HeaderProps, HeaderState> {
       ConfigService.getItem("defaultSyncOption");
     if (!willAutoSync) {
       this.handleOpenLastReadBook();
+    }
+    if (
+      isSelfHostedMode() &&
+      ConfigService.getReaderConfig("isDisableAutoSync") !== "yes"
+    ) {
+      this.handleCloudSync(undefined);
     }
     this.startScheduledSync();
   }
@@ -567,10 +576,11 @@ class Header extends React.Component<HeaderProps, HeaderState> {
     setTimeout(async () => {
       if (this.props.mode === "home") {
         this.props.history.push("/manager/home");
-        if (
-          ConfigService.getReaderConfig("isFirstSync") !== "no" &&
-          ConfigService.getReaderConfig("isEnableKoodoSync") !== "yes"
-        ) {
+    if (
+      ConfigService.getReaderConfig("isFirstSync") !== "no" &&
+      ConfigService.getReaderConfig("isEnableKoodoSync") !== "yes" &&
+      !isSelfHostedMode()
+    ) {
           ConfigService.setReaderConfig("isFirstSync", "no");
           let config = await getCloudConfig(
             ConfigService.getItem("defaultSyncOption") || ""
@@ -781,7 +791,7 @@ class Header extends React.Component<HeaderProps, HeaderState> {
           <div
             className="setting-icon-container"
             onClick={async () => {
-              if (this.props.isAuthed) {
+              if (isSelfHostedMode() || this.props.isAuthed) {
                 if (!ConfigService.getItem("defaultSyncOption")) {
                   toast(
                     this.props.t(
@@ -822,7 +832,8 @@ class Header extends React.Component<HeaderProps, HeaderState> {
           </div>
         </div>
 
-        {!this.props.isAuthed &&
+        {!isSelfHostedMode() &&
+        !this.props.isAuthed &&
         !this.state.isHidePro &&
         window.location.hostname !== "web.koodoreader.cn" ? (
           <div className="header-report-container">

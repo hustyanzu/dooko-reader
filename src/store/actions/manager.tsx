@@ -18,6 +18,7 @@ import {
 } from "../../constants/settingList";
 import toast from "react-hot-toast";
 import BookUtil from "../../utils/file/bookUtil";
+import { isSelfHostedMode } from "../../utils/selfHosted";
 import i18n from "../../i18n";
 import { langToName } from "../../utils/common";
 import { resetReaderRequest } from "../../utils/request/reader";
@@ -222,6 +223,10 @@ export function handleFetchBooks() {
 }
 export function handleFetchUserInfo() {
   return async (dispatch: Dispatch) => {
+    if (isSelfHostedMode()) {
+      dispatch(handleUserInfo(null));
+      return null;
+    }
     let response = await fetchUserInfo();
     let userInfo: any = null;
     if (response.code === 200) {

@@ -8,6 +8,9 @@ FROM caddy:latest
 # Copy pre-built website files (built by CI runner, platform-independent)
 COPY build/ /usr/share/caddy
 
+# Copy the self-hosted frontend/backend bridge config
+COPY Caddyfile /etc/caddy/Caddyfile
+
 # Copy pre-compiled Go binary for the target platform
 ARG TARGETARCH
 COPY httpserver/httpserver-linux-${TARGETARCH} /app/httpserver
@@ -16,18 +19,19 @@ COPY httpserver/httpserver-linux-${TARGETARCH} /app/httpserver
 RUN mkdir -p /app/uploads && \
     chmod 755 /app/uploads
 
-# Expose both Caddy (80), httpServer (8080), and KOReader sync server (7200) ports
-EXPOSE 80 8080 7200
+# Expose both Caddy frontend (7661), httpServer (8080), and KOReader sync server (7200) ports
+EXPOSE 7661 8080 7200
 
 # Create startup script to run both services
 RUN echo '#!/bin/sh' > /start.sh && \
     echo 'cd /app' >> /start.sh && \
+    echo 'echo "{\"enabled\":true,\"username\":\"$SERVER_USERNAME\",\"password\":\"$SERVER_PASSWORD\"}" > /usr/share/caddy/koodo-config.json' >> /start.sh && \
     echo '/app/httpserver &' >> /start.sh && \
     echo 'caddy run --config /etc/caddy/Caddyfile' >> /start.sh && \
     chmod +x /start.sh
 
 # Set default environment variables (can be overridden at runtime)
-ENV ENABLE_HTTP_SERVER=false
+ENV ENABLE_HTTP_SERVER=true
 ENV SERVER_USERNAME=admin
 ENV SERVER_PASSWORD=securePass123
 ENV SERVER_PASSWORD_FILE=my_secret

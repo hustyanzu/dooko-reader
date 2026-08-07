@@ -44,6 +44,7 @@ import { updateUserConfig } from "../../../utils/request/user";
 import BookUtil from "../../../utils/file/bookUtil";
 import Book from "../../../models/Book";
 import ConfigUtil from "../../../utils/file/configUtil";
+import { isSelfHostedMode } from "../../../utils/selfHosted";
 declare var window: any;
 class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
   constructor(props: SettingInfoProps) {
@@ -81,6 +82,9 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
     this.handleRest(this.state[stateName]);
   };
   handleAddDataSourceFromGrid = async (targetDrive: string) => {
+    if (isSelfHostedMode()) {
+      return;
+    }
     await this.handleAddDataSource({ target: { value: targetDrive } });
     if (this.props.settingDrive) {
       this.setState({ showDefaultSyncAddGrid: false });
@@ -88,7 +92,7 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
   };
   handleAddDataSource = async (event: any) => {
     let targetDrive = event.target.value;
-    if (!targetDrive) {
+    if (!targetDrive || isSelfHostedMode()) {
       return;
     }
     if (
@@ -217,6 +221,9 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
     if (!targetDrive) {
       return;
     }
+    if (isSelfHostedMode() && targetDrive === "docker") {
+      return;
+    }
     await TokenService.setToken(targetDrive + "_token", "");
     SyncService.removeSyncUtil(targetDrive);
     removeCloudConfig(targetDrive);
@@ -239,6 +246,9 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
   };
   handleSetDefaultSyncOption = async (newValue: string) => {
     if (!newValue) {
+      return;
+    }
+    if (isSelfHostedMode() && newValue !== "docker") {
       return;
     }
     if (!this.props.isAuthed) {
@@ -278,6 +288,13 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
         backupDrive: mode === "backup" ? "" : this.state.backupDrive,
         restoreDrive: mode === "restore" ? "" : this.state.restoreDrive,
       });
+      return;
+    }
+    if (
+      isSelfHostedMode() &&
+      targetDrive !== "docker" &&
+      targetDrive !== "local"
+    ) {
       return;
     }
     if (targetDrive === "add") {
@@ -587,41 +604,44 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
   };
   render() {
     const { showDefaultSyncAddGrid } = this.state;
+    const selfHosted = isSelfHostedMode();
     return (
       <>
-        <div
-          className="add-source-card"
-          onClick={() => {
-            this.setState({
-              showDefaultSyncAddGrid: !this.state.showDefaultSyncAddGrid,
-            });
-          }}
-        >
-          <svg
-            className="add-source-card-icon"
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            style={{
-              transform: showDefaultSyncAddGrid
-                ? "rotate(45deg)"
-                : "rotate(0deg)",
-              transition: "transform 0.25s ease",
+        {!selfHosted && (
+          <div
+            className="add-source-card"
+            onClick={() => {
+              this.setState({
+                showDefaultSyncAddGrid: !this.state.showDefaultSyncAddGrid,
+              });
             }}
           >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          <span className="add-source-card-label">
-            <Trans>Add data source</Trans>
-          </span>
-        </div>
-        {this.state.showDefaultSyncAddGrid && (
+            <svg
+              className="add-source-card-icon"
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{
+                transform: showDefaultSyncAddGrid
+                  ? "rotate(45deg)"
+                  : "rotate(0deg)",
+                transition: "transform 0.25s ease",
+              }}
+            >
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span className="add-source-card-label">
+              <Trans>Add data source</Trans>
+            </span>
+          </div>
+        )}
+        {!selfHosted && this.state.showDefaultSyncAddGrid && (
           <div
             className="account-login-grid"
             style={{
@@ -945,6 +965,18 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
         )}
         <div className="setting-dialog-new-title">
           <Trans>Set default sync option</Trans>
+          {selfHosted ? (
+            <select
+              name=""
+              className="lang-setting-dropdown"
+              value="docker"
+              disabled
+            >
+              <option value="docker" className="lang-setting-option">
+                {this.props.t("Docker")}
+              </option>
+            </select>
+          ) : (
           <select
             name=""
             className="lang-setting-dropdown"
@@ -1034,7 +1066,9 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
                 </option>
               ))}
           </select>
+          )}
         </div>
+        {!selfHosted && (
         <div className="setting-dialog-new-title">
           <Trans>Delete data source</Trans>
           <select
@@ -1059,6 +1093,7 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
               ))}
           </select>
         </div>
+        )}
         <div className="setting-dialog-new-title">
           <Trans>Backup library</Trans>
           <select

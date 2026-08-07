@@ -29,6 +29,7 @@ import SyncService from "./storage/syncService";
 import localforage from "localforage";
 import { driveList } from "../constants/driveList";
 import { updateUserConfig } from "./request/user";
+import { isSelfHosted } from "./selfHosted";
 import { languageCNMap, languageENMap } from "../constants/ttsList";
 import { BookHelper } from "../assets/lib/kookit.min";
 import {
@@ -1386,6 +1387,9 @@ export const resetKoodoSync = async () => {
   }, 1000);
 };
 export const handleAutoCloudSync = async () => {
+  if (await isSelfHosted()) {
+    return false;
+  }
   let syncRes = await getCloudSyncToken();
   if (
     syncRes.code === 200 &&

@@ -11,6 +11,7 @@ import Note from "../../models/Note";
 import Bookmark from "../../models/Bookmark";
 import DictHistory from "../../models/DictHistory";
 import { decryptToken } from "../request/thirdparty";
+import { getSelfHostedBinding } from "../selfHosted";
 import toast from "react-hot-toast";
 import i18n from "../../i18n";
 import BookUtil from "./bookUtil";
@@ -291,15 +292,21 @@ export const getCloudConfig = (service: string): Promise<any> => {
 export const getCloudToken = async (service: string) => {
   if (configCache[service]) {
     return configCache[service];
-  } else {
-    let result = await decryptToken(service);
-    if (result.code !== 200) {
-      return null;
-    }
-    let config = JSON.parse(result.data.token);
-    configCache[service] = config;
-    return config;
   }
+  if (service === "docker") {
+    const binding = await getSelfHostedBinding();
+    if (binding) {
+      configCache[service] = binding;
+      return binding;
+    }
+  }
+  let result = await decryptToken(service);
+  if (result.code !== 200) {
+    return null;
+  }
+  let config = JSON.parse(result.data.token);
+  configCache[service] = config;
+  return config;
 };
 export const removeCloudConfig = (service: string) => {
   delete configCache[service];

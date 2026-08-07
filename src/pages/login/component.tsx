@@ -31,6 +31,7 @@ import SettingDialog from "../../components/dialogs/settingDialog";
 import LoadingDialog from "../../components/dialogs/loadingDialog";
 import { resetReaderRequest } from "../../utils/request/reader";
 import { resetThirdpartyRequest } from "../../utils/request/thirdparty";
+import { isSelfHosted } from "../../utils/selfHosted";
 
 class Login extends React.Component<LoginProps, LoginState> {
   private lastLoginClickTime: number = 0;
@@ -99,7 +100,7 @@ class Login extends React.Component<LoginProps, LoginState> {
       let result = await handleAutoCloudSync();
       if (result) {
         this.props.cloudSyncFunc();
-      } else {
+      } else if (!(await isSelfHosted())) {
         ConfigService.removeItem("defaultSyncOption");
         ConfigService.removeItem("dataSourceList");
       }

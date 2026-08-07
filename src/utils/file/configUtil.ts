@@ -64,7 +64,16 @@ class ConfigUtil {
     if (type === "sync") {
       config = ConfigService.getAllSyncRecord();
     } else {
-      let configList = CommonTool.configList;
+      let configList = [
+        ...CommonTool.configList,
+        "readerConfig",
+        "dictList",
+        "backgroundList",
+        "fontList",
+        "customBackgrounds",
+        "customFonts",
+        "customDicts",
+      ];
       for (let i = 0; i < configList.length; i++) {
         let item = configList[i];
         if (ConfigService.getItem(item)) {

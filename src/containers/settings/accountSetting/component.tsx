@@ -32,6 +32,7 @@ import { handleClearToken, handleExitApp } from "../../../utils/request/common";
 import copyTextToClipboard from "copy-text-to-clipboard";
 import { resetReaderRequest } from "../../../utils/request/reader";
 import { resetThirdpartyRequest } from "../../../utils/request/thirdparty";
+import { isSelfHosted } from "../../../utils/selfHosted";
 declare var window: any;
 class AccountSetting extends React.Component<
   SettingInfoProps,
@@ -225,7 +226,7 @@ class AccountSetting extends React.Component<
       let result = await handleAutoCloudSync();
       if (result) {
         this.props.cloudSyncFunc();
-      } else {
+      } else if (!(await isSelfHosted())) {
         ConfigService.removeItem("defaultSyncOption");
         ConfigService.removeItem("dataSourceList");
       }

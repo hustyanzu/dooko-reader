@@ -1,8 +1,8 @@
 {
-  "name": "koodo-reader",
+  "name": "dooko-reader",
   "main": "main.js",
   "version": "2.4.4",
-  "description": "Koodo Reader is a cross-platform ebook reader",
+  "description": "Dooko Reader is a cross-platform ebook reader",
   "author": {
     "name": "App by Troye",
     "email": "feedback@koodoreader.com"

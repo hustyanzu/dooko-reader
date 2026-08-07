@@ -19,6 +19,7 @@ import DictSetting from "../../../containers/settings/dictSetting";
 import MoreSetting from "../../../containers/settings/moreSetting";
 import ShortcutSetting from "../../../containers/settings/shortcutSetting";
 import { isElectron } from "react-device-detect";
+import { isSelfHostedMode } from "../../../utils/selfHosted";
 class SettingDialog extends React.Component<
   SettingInfoProps,
   SettingInfoState
@@ -65,6 +66,16 @@ class SettingDialog extends React.Component<
   };
 
   getCurrentPageTitle = () => {
+    if (
+      isSelfHostedMode() &&
+      (this.props.settingMode === "account" ||
+        this.props.settingMode === "sync" ||
+        this.props.settingMode === "about" ||
+        this.props.settingMode === "plugins" ||
+        this.props.settingMode === "more")
+    ) {
+      return "General";
+    }
     switch (this.props.settingMode) {
       case "general":
         return "General";
@@ -133,22 +144,37 @@ class SettingDialog extends React.Component<
               "20px"
             )}
 
-            {this.renderSidebarItem("sync", "icon-sync", "Sync and backup", "")}
-            {this.renderSidebarItem(
-              "more",
-              "icon-more",
-              "More settings",
-              "13px"
-            )}
-            {this.renderSidebarItem("account", "icon-user", "Account", "18px")}
-            {this.renderSidebarItem("about", "icon-detail", "About", "18px")}
+            {!isSelfHostedMode() &&
+              this.renderSidebarItem(
+                "sync",
+                "icon-sync",
+                "Sync and backup",
+                ""
+              )}
+            {!isSelfHostedMode() &&
+              this.renderSidebarItem(
+                "more",
+                "icon-more",
+                "More settings",
+                "13px"
+              )}
+            {!isSelfHostedMode() &&
+              this.renderSidebarItem("account", "icon-user", "Account", "18px")}
+            {!isSelfHostedMode() &&
+              this.renderSidebarItem("about", "icon-detail", "About", "18px")}
           </div>
 
           <hr className="setting-dialog-sidebar-divider" />
 
           {/* 第二组 */}
           <div className="setting-dialog-sidebar-group">
-            {this.renderSidebarItem("plugins", "icon-internet", "Plugins", "")}
+            {!isSelfHostedMode() &&
+              this.renderSidebarItem(
+                "plugins",
+                "icon-internet",
+                "Plugins",
+                ""
+              )}
             {this.renderSidebarItem(
               "ai",
               "icon-idea-line",
@@ -215,13 +241,25 @@ class SettingDialog extends React.Component<
             ) : this.props.settingMode === "appearance" ? (
               <AppearanceSetting />
             ) : this.props.settingMode === "sync" ? (
-              <SyncSetting />
+              isSelfHostedMode() ? (
+                <GeneralSetting />
+              ) : (
+                <SyncSetting />
+              )
             ) : this.props.settingMode === "account" ? (
-              <AccountSetting />
+              isSelfHostedMode() ? (
+                <GeneralSetting />
+              ) : (
+                <AccountSetting />
+              )
             ) : this.props.settingMode === "data" ? (
               <DataSetting />
             ) : this.props.settingMode === "about" ? (
-              <AboutSetting />
+              isSelfHostedMode() ? (
+                <GeneralSetting />
+              ) : (
+                <AboutSetting />
+              )
             ) : this.props.settingMode === "ai" ? (
               <AISetting />
             ) : this.props.settingMode === "background" ? (
@@ -235,9 +273,19 @@ class SettingDialog extends React.Component<
             ) : this.props.settingMode === "dict" ? (
               <DictSetting />
             ) : this.props.settingMode === "more" ? (
-              <MoreSetting />
+              isSelfHostedMode() ? (
+                <GeneralSetting />
+              ) : (
+                <MoreSetting />
+              )
+            ) : this.props.settingMode === "plugins" ? (
+              isSelfHostedMode() ? (
+                <GeneralSetting />
+              ) : (
+                <PluginSetting />
+              )
             ) : (
-              <PluginSetting />
+              <GeneralSetting />
             )}
           </div>
         </div>

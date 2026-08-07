@@ -15,6 +15,7 @@ import {
   setProtectionPin,
 } from "../../../utils/reader/protectionUtil";
 import { vexPasswordInputAsync, vexSelectAsync } from "../../../utils/common";
+import { isSelfHostedMode } from "../../../utils/selfHosted";
 import i18n from "../../../i18n";
 
 class MoreSetting extends React.Component<MoreSettingProps, MoreSettingState> {
@@ -292,6 +293,8 @@ class MoreSetting extends React.Component<MoreSettingProps, MoreSettingState> {
 
     return (
       <>
+        {!isSelfHostedMode() && (
+          <>
         {this.renderPinKeypad()}
         <div className="setting-dialog-new-title" key="protection-toggle">
           <span style={{ width: "calc(100% - 100px)" }}>
@@ -352,6 +355,8 @@ class MoreSetting extends React.Component<MoreSettingProps, MoreSettingState> {
                 <Trans>Use Touch ID or Windows Hello to protect the app</Trans>
               )}
             </p>
+          </>
+        )}
           </>
         )}
       </>

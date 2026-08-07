@@ -12,6 +12,7 @@ import { resetReaderRequest } from "./reader";
 import { resetUserRequest } from "./user";
 import { resetThirdpartyRequest } from "./thirdparty";
 import { isElectron } from "react-device-detect";
+import { isSelfHostedMode } from "../selfHosted";
 const PUBLIC_URL = "https://api.koodoreader.com";
 const CN_PUBLIC_URL = "https://api.koodoreader.cn";
 let cachedPluginList: any[] | null = null;
@@ -19,12 +20,18 @@ export const getPublicUrl = () => {
   return getServerRegion() === "china" ? CN_PUBLIC_URL : PUBLIC_URL;
 };
 export const checkDeveloperUpdate = async () => {
+  if (isSelfHostedMode()) {
+    return {};
+  }
   let res = await axios.get(
     getPublicUrl() + `/api/update_dev?name=${navigator.language}`
   );
   return res.data.log;
 };
 export const getPluginList = async () => {
+  if (isSelfHostedMode()) {
+    return [];
+  }
   if (cachedPluginList) {
     return cachedPluginList;
   }
@@ -48,6 +55,9 @@ export const uploadFile = async (url: string, file: any) => {
   });
 };
 export const checkStableUpdate = async () => {
+  if (isSelfHostedMode()) {
+    return {};
+  }
   let res = await axios.get(
     getPublicUrl() + `/api/update?name=${navigator.language}`
   );
@@ -55,6 +65,9 @@ export const checkStableUpdate = async () => {
 };
 export const handleExitApp = async () => {
   toast.error(i18n.t("Authorization failed, please login again"));
+  if (isSelfHostedMode()) {
+    return;
+  }
   await handleClearToken();
   //路由到login页面
   reloadManager();
@@ -66,10 +79,15 @@ export const handleClearToken = async () => {
   let dataSourceList = ConfigService.getAllListConfig("dataSourceList") || [];
   for (let i = 0; i < dataSourceList.length; i++) {
     let targetDrive = dataSourceList[i];
+    if (isSelfHostedMode() && targetDrive === "docker") {
+      continue;
+    }
     await TokenService.setToken(targetDrive + "_token", "");
   }
-  ConfigService.removeItem("defaultSyncOption");
-  ConfigService.removeItem("dataSourceList");
+  if (!isSelfHostedMode()) {
+    ConfigService.removeItem("defaultSyncOption");
+    ConfigService.removeItem("dataSourceList");
+  }
   resetReaderRequest();
   resetUserRequest();
   resetThirdpartyRequest();
@@ -133,7 +151,10 @@ export const chatStream = async (
     });
   });
 };
-export const getNotification = async () => {
+export const getNotification = async (): Promise<any> => {
+  if (isSelfHostedMode()) {
+    return {};
+  }
   let deviceUuid = await TokenService.getFingerprint();
   const res = await axios.post(
     "https://api.koodoreader.com/api/get_notification",

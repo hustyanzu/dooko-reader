@@ -5,6 +5,7 @@ import { SidebarProps, SidebarState } from "./interface";
 import { withRouter } from "react-router-dom";
 import { ConfigService } from "../../assets/lib/kookit-extra-browser.min";
 import { getWebsiteUrl, openInBrowser } from "../../utils/common";
+import { isSelfHostedMode } from "../../utils/selfHosted";
 import { Trans } from "react-i18next";
 import toast from "react-hot-toast";
 import {
@@ -560,6 +561,7 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
             )}
           </div>
           {/* Stats button at the bottom */}
+          {!isSelfHostedMode() && (
           <div className="side-menu-about" style={{ paddingBottom: 8 }}>
             <div
               className={"side-menu-selector"}
@@ -600,6 +602,7 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
               </span>
             </div>
           </div>
+          )}
         </div>
       </>
     );

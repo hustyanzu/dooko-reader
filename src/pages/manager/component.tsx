@@ -29,6 +29,7 @@ import {
 } from "../../utils/reader/bookDrag";
 import Footer from "../../components/footer";
 import ProtectionOverlay from "../../components/protection";
+import { isSelfHostedMode } from "../../utils/selfHosted";
 class Manager extends React.Component<ManagerProps, ManagerState> {
   timer!: NodeJS.Timeout;
   private isDraggingFromApp = false;
@@ -147,7 +148,7 @@ class Manager extends React.Component<ManagerProps, ManagerState> {
           }
         }}
       >
-        <ProtectionOverlay />
+        {!isSelfHostedMode() && <ProtectionOverlay />}
         <Tooltip id="my-tooltip" style={{ zIndex: 25 }} />
         {this.props.isShowPopupNote && (
           <div
