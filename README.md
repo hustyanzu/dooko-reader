@@ -1,245 +1,72 @@
-<div align="left">
+# Dooko Reader
 
-[简体中文](./README_cn.md) | [हिंदी](./README_hi.md)
-|[Português](./README_pt.md) | [Indonesian](./README_id.md) | English | [Türkçe](./README_tr.md)
+A self-hosted, web-only fork of [Koodo Reader](https://github.com/koodo-reader/koodo-reader), an ebook reader with support for EPUB, PDF, MOBI, AZW3, TXT, FB2, CBR/CBZ/CBT/CB7, MD, DOCX, HTML and more.
 
-</div>
+## What's different from upstream
 
-<div align="center" >
-  <img src="https://dl.koodoreader.com/screenshots/logo.png" width="96px" height="96px"/>
-</div>
+- **数据存在服务器，而不是浏览器本地** — the web frontend is bound to the Go backend bundled in the same container. Books, notes, highlights, reading progress and settings are stored on the server, not in localStorage/IndexedDB. Open the same deployment from any device or browser and you get the exact same library and reading state — a seamless, stateless reading experience with no manual sync, no data source binding, and nothing to reconfigure.
+- **Web only** — the Electron desktop client and its build toolchain are removed. Deploy it yourself and open it from any browser on any device.
+- **No Koodo cloud dependency** — login, account, Pro features, update checks, plugin registry, Koodo Sync and all other connections to the official Koodo services are removed.
+- **Password gate** — the web UI is protected by a simple password (the same `SERVER_PASSWORD` used by the backend). Logged in for 30 days via cookie.
+- **Two ports, one container**:
+  - `7661` — the web frontend. Its backend API calls are proxied to the Go server inside the container.
+  - `8080` — the Go file server (Basic auth), exposed directly so external clients (e.g. the official Koodo mobile app) can connect to it.
 
-<h1 align="center">
-  Koodo Reader
-</h1>
+## Deployment
 
-<h3 align="center">
-  A cross-platform ebook reader
-</h3>
-<div align="center">
+### Docker Compose (recommended)
 
-[Download](https://koodoreader.com/en) | [Preview](https://web.koodoreader.com) | [Roadmap](https://koodoreader.com/en/roadmap) | [Document](https://koodoreader.com/en/document) | [Plugins](https://koodoreader.com/en/plugin)
-
-</div>
-
-## Preview
-
-<div align="center">
-  <br/>
-  <br/>
-  <img src="https://dl.koodoreader.com/screenshots/7.png" width="800px">
-  <br/>
-  <br/>
-  <img src="https://dl.koodoreader.com/screenshots/8.png" width="800px">
-  <br/>
-  <br/>
-</div>
-
-## Features
-
-- Format support:
-  - EPUB (**.epub**)
-  - PDF (**.pdf**)
-  - DRM-free Mobipocket (**.mobi**) and Kindle (**.azw3**, **.azw**)
-  - Plain-text (**.txt**)
-  - FictionBook (**.fb2**)
-  - Comic book archive (**.cbr**, **.cbz**, **.cbt**, **.cb7**)
-  - Rich text (**.md**, **.docx**)
-  - HyperText (**.html**, **.xml**, **.xhtml**, **.mhtml**, **.htm**)
-- Platform support: **Windows**, **macOS**, **Linux**, **Android**, **iOS** and **Web**
-- Sync and backup your data with **OneDrive**, **Google Drive**, **Dropbox**, **iCloud**, **MEGA**, **pCloud**, **Yandex Disk**, **Box**, **FTP**, **SFTP**, **WebDAV**, **SMB**, or **Object Storage**
-- Easily import books from **OneDrive**, **Google Drive**, **MEGA**, **Yandex Disk**, **Box**, **FTP**, **SFTP**, **WebDAV**, **SMB**, or **Object Storage**
-- Use your custom AI model to power AI Translation, AI Dictionary, AI Summarization, and AI Encyclopedia
-- Sync reading progress with **KOReader**
-- Sync notes and highlights to **Readwise**, **Notion**, **Obsidian**, **Joplin**, and more
-- Support local MDX dictionary lookup
-- Automatically sync words to **Anki** and **Eudic**
-- Protect your library with password, PIN, Windows Hello, Touch ID, and more
-- One-click export of all books
-- One-click export of notes and highlights, supporting **CSV**, **Markdown**, **HTML**, **TXT**, and **PDF**
-- Privacy-first design: no tracking services, and no proactive uploading of your reading data or personal information
-- Support **OPDS** protocol and share your library as an **OPDS** feed
-- Support browser extension to save anything on the web to your library
-- Built-in 50+ plugins for translation, dictionaries, and text-to-speech, with support for custom plugins
-- Support vertical layout book
-- Support reading statistics
-- Built-in **Paddle** and **Tesseract** OCR engines
-- Support library snapshots and version control
-- Single-column, two-column or continuous scrolling layouts
-- Text-to-speech, translation, dictionary, touch screen support, and batch import
-- Add bookmarks, notes, and highlights to your books
-- Adjust font size, font family, line-spacing, paragraph spacing, background color, text color, margins, and brightness
-- Night mode and theme color
-- Text highlighting, underline, boldness, italics, and shadow
-
-## Installation
-
-### Desktop version: [Download](https://koodoreader.com/en/download)
-
-### Web version：[Visit](https://web.koodoreader.com)
-
-### Android version：[Download](https://koodoreader.com/en/download)
-
-### iOS version：[Download](https://koodoreader.com/en/download)
-
-### Browser extension：[Download](https://www.koodoreader.com/en/use-extension)
-
-### Install with Scoop:
-
-```shell
-scoop bucket add extras
-scoop install extras/koodo-reader
+```yaml
+services:
+  dooko-reader:
+    image: ghcr.io/hustyanzu/dooko-reader:latest
+    container_name: dooko-reader
+    restart: unless-stopped
+    ports:
+      - "7661:7661"
+      - "8080:8080"
+    environment:
+      - SERVER_USERNAME=admin
+      - SERVER_PASSWORD=your-password-here
+    volumes:
+      - /opt/uploads:/app/uploads
 ```
 
-### Install with Winget:
+Then open `http://<your-host>:7661` and log in with `SERVER_PASSWORD`.
 
-```shell
-winget install AppByTroye.KoodoReader
+### Environment variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SERVER_USERNAME` | `admin` | Backend Basic auth username (used by the API on :8080 and external clients) |
+| `SERVER_PASSWORD` | `securePass123` | Backend password — also the web password gate password |
+| `SERVER_PASSWORD_FILE` | `my_secret` | Docker secret file to read the password from (overrides `SERVER_PASSWORD`) |
+| `ENABLE_HTTP_SERVER` | `true` | Set to `false` to disable the file server |
+| `ENABLE_KOREADER_SERVER` | `false` | Enable the KOReader sync server (:7200) |
+| `ENABLE_OPDS` | `false` | Enable the OPDS catalog on the file server |
+
+### Accessing the backend API externally
+
+The Go server on `:8080` serves the raw file storage with Basic auth:
+
+- `POST /upload?dir=` — upload a file
+- `GET /download?dir=&filename=` — download a file
+- `DELETE /delete?dir=&filename=` — delete a file
+- `GET /list?dir=` — list files
+- `GET /opds` — OPDS catalog (when enabled)
+
+Files are stored under `/app/uploads`. The web frontend reaches these same endpoints through the Caddy proxy on `:7661`.
+
+### Build from source
+
+```bash
+yarn build                                  # build the React app into build/
+cd httpserver && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o httpserver-linux-amd64 .
+docker build -t dooko-reader:dev .          # expects build/ and httpserver-linux-<arch>
 ```
 
-### Install with Flathub:
+Publishing to `ghcr.io/hustyanzu/dooko-reader` (amd64 + arm64) is automated via `.github/workflows/docker-publish.yml` on pushes to `dev` and `v*` tags.
 
-```shell
-flatpak install flathub io.github.troyeguo.koodo-reader
-```
+## License
 
-### Install with Snap Store:
-
-```shell
-sudo snap install koodo-reader
-```
-
-### Install with Homebrew:
-
-```shell
-brew install --cask koodo-reader
-```
-
-### Install with Docker:
-
-[Installation Guide](https://koodoreader.com/en/deploy-docker)
-
-## Screenshot
-
-<div align="center">
-  <b>Book list</b>
-  <br/>
-  <br/>
-  <kbd><img src="https://dl.koodoreader.com/screenshots/1.png" width="800px"></kbd>
-  <br/>
-  <br/>
-  <b>Book display</b>
-  <br/>
-  <br/>
-  <kbd><img src="https://dl.koodoreader.com/screenshots/5.png" width="800px"></kbd>
-  <br/>
-  <br/>
-  <b>List mode</b>
-  <br/>
-  <br/>
-  <kbd><img src="https://dl.koodoreader.com/screenshots/2.png" width="800px"></kbd>
-  <br/>
-  <br/>
-  <b>Cover mode</b>
-  <br/>
-  <br/>
-  <kbd><img src="https://dl.koodoreader.com/screenshots/3.png" width="800px"></kbd>
-  <br/>
-  <br/>
-  <b>Reader menu</b>
-  <br/>
-  <br/>
-  <kbd><img src="https://dl.koodoreader.com/screenshots/6.png" width="800px"></kbd>
-  <br/>
-  <br/>
-  <b>Dark mode</b>
-  <br/>
-  <br/>
-  <kbd><img src="https://dl.koodoreader.com/screenshots/4.png" width="800px"></kbd>
-  <br/>
-</div>
-
-## Develop
-
-Make sure that you have installed yarn and git
-
-1. Download the repo
-
-   ```
-   git clone https://github.com/koodo-reader/koodo-reader.git
-   ```
-
-2. Enter desktop mode
-
-   ```
-   yarn
-   yarn dev
-   ```
-
-3. Enter web mode
-
-   ```
-   yarn
-   yarn start
-   ```
-
-## Translation
-
-### Edit current language
-
-1. Select your target language from the following list.
-
-2. Click the view button to examine the source file. The untranslated terms are listed at the bottom of each file.
-
-3. Translate the terms to your target language based on the given English reference
-
-4. Submit the translation file or just translation snippets based on the amount of your translation to [this link](https://github.com/koodo-reader/koodo-reader/issues/new?assignees=&labels=submit+translation&projects=&template=submit_translation.yml). Pull request is also welcomed.
-
-| Language(A-Z)   | Code  | View                                    |
-| --------------- | ----- | --------------------------------------- |
-| Amharic         | am    | [View](./src/assets/locales/am.json)    |
-| Arabic          | ar    | [View](./src/assets/locales/ar.json)    |
-| Armenian        | hy    | [View](./src/assets/locales/hy.json)    |
-| Bengali         | bn    | [View](./src/assets/locales/bn.json)    |
-| Bulgarian       | bg    | [View](./src/assets/locales/bg.json)    |
-| Chinese (CN)    | zh-CN | [View](./src/assets/locales/zh-CN.json) |
-| Chinese (MO)    | zh-MO | [View](./src/assets/locales/zh-MO.json) |
-| Chinese (TW)    | zh-TW | [View](./src/assets/locales/zh-TW.json) |
-| Czech           | cs    | [View](./src/assets/locales/cs.json)    |
-| Danish          | da    | [View](./src/assets/locales/da.json)    |
-| Dutch           | nl    | [View](./src/assets/locales/nl.json)    |
-| English         | en    | [View](./src/assets/locales/en.json)    |
-| Finnish         | fi    | [View](./src/assets/locales/fi.json)    |
-| French          | fr    | [View](./src/assets/locales/fr.json)    |
-| German          | de    | [View](./src/assets/locales/de.json)    |
-| Greek           | el    | [View](./src/assets/locales/el.json)    |
-| Hindi           | hi    | [View](./src/assets/locales/hi.json)    |
-| Hungarian       | hu    | [View](./src/assets/locales/hu.json)    |
-| Indonesian      | id    | [View](./src/assets/locales/id.json)    |
-| Interlingue     | ie    | [View](./src/assets/locales/ie.json)    |
-| Irish           | ga    | [View](./src/assets/locales/ga.json)    |
-| Italian         | it    | [View](./src/assets/locales/it.json)    |
-| Japanese        | ja    | [View](./src/assets/locales/ja.json)    |
-| Korean          | ko    | [View](./src/assets/locales/ko.json)    |
-| Persian         | fa    | [View](./src/assets/locales/fa.json)    |
-| Polish          | pl    | [View](./src/assets/locales/pl.json)    |
-| Portuguese      | pt    | [View](./src/assets/locales/pt.json)    |
-| Portuguese (BR) | pt-BR | [View](./src/assets/locales/pt-BR.json) |
-| Romanian        | ro    | [View](./src/assets/locales/ro.json)    |
-| Russian         | ru    | [View](./src/assets/locales/ru.json)    |
-| Slovenian       | sl    | [View](./src/assets/locales/sl.json)    |
-| Spanish         | es    | [View](./src/assets/locales/es.json)    |
-| Swedish         | sv    | [View](./src/assets/locales/sv.json)    |
-| Tamil           | ta    | [View](./src/assets/locales/ta.json)    |
-| Thai            | th    | [View](./src/assets/locales/th.json)    |
-| Tagalog         | tl    | [View](./src/assets/locales/tl.json)    |
-| Tibetan         | bo    | [View](./src/assets/locales/bo.json)    |
-| Turkish         | tr    | [View](./src/assets/locales/tr.json)    |
-| Ukrainian       | uk    | [View](./src/assets/locales/uk.json)    |
-| Vietnamese      | vi    | [View](./src/assets/locales/vi.json)    |
-
-### Add new language
-
-1. If you can't find your target language from the above list, download the English source file from [this link](./src/assets/locales/en.json).
-
-2. When you're finished translating, submit the source file to [this link](https://github.com/koodo-reader/koodo-reader/issues/new?assignees=&labels=submit+translation&projects=&template=submit_translation.yml). Pull requests are also welcome.
+AGPL-3.0, same as the upstream [Koodo Reader](https://github.com/koodo-reader/koodo-reader).
