@@ -3,12 +3,8 @@ import "./settingDialog.css";
 import { SettingInfoProps, SettingInfoState } from "./interface";
 import { Trans } from "react-i18next";
 import GeneralSetting from "../../../containers/settings/generalSetting";
-import SyncSetting from "../../../containers/settings/syncSetting";
-import AccountSetting from "../../../containers/settings/accountSetting";
-import PluginSetting from "../../../containers/settings/pluginSetting";
 import ReadingSetting from "../../../containers/settings/readingSetting";
 import AppearanceSetting from "../../../containers/settings/appearanceSetting";
-import AboutSetting from "../../../containers/settings/aboutSetting";
 import DataSetting from "../../../containers/settings/dataSetting";
 import AISetting from "../../../containers/settings/aiSetting";
 import BackgroundSetting from "../../../containers/settings/backgroundSetting";
@@ -16,10 +12,8 @@ import FontSetting from "../../../containers/settings/fontSetting";
 import ChapterSetting from "../../../containers/settings/chapterSetting";
 import TextSetting from "../../../containers/settings/textSetting";
 import DictSetting from "../../../containers/settings/dictSetting";
-import MoreSetting from "../../../containers/settings/moreSetting";
 import ShortcutSetting from "../../../containers/settings/shortcutSetting";
 import { isElectron } from "react-device-detect";
-import { isSelfHostedMode } from "../../../utils/selfHosted";
 class SettingDialog extends React.Component<
   SettingInfoProps,
   SettingInfoState
@@ -66,16 +60,6 @@ class SettingDialog extends React.Component<
   };
 
   getCurrentPageTitle = () => {
-    if (
-      isSelfHostedMode() &&
-      (this.props.settingMode === "account" ||
-        this.props.settingMode === "sync" ||
-        this.props.settingMode === "about" ||
-        this.props.settingMode === "plugins" ||
-        this.props.settingMode === "more")
-    ) {
-      return "General";
-    }
     switch (this.props.settingMode) {
       case "general":
         return "General";
@@ -85,14 +69,6 @@ class SettingDialog extends React.Component<
         return "Shortcuts";
       case "appearance":
         return "Appearance";
-      case "plugins":
-        return "Plugins";
-      case "sync":
-        return "Sync and backup";
-      case "account":
-        return "Account";
-      case "about":
-        return "About";
       case "ai":
         return "AI service";
       case "background":
@@ -105,8 +81,6 @@ class SettingDialog extends React.Component<
         return "Text rules";
       case "dict":
         return "Local dictionary";
-      case "more":
-        return "More settings";
       default:
         return "Setting";
     }
@@ -143,38 +117,12 @@ class SettingDialog extends React.Component<
               "Appearance",
               "20px"
             )}
-
-            {!isSelfHostedMode() &&
-              this.renderSidebarItem(
-                "sync",
-                "icon-sync",
-                "Sync and backup",
-                ""
-              )}
-            {!isSelfHostedMode() &&
-              this.renderSidebarItem(
-                "more",
-                "icon-more",
-                "More settings",
-                "13px"
-              )}
-            {!isSelfHostedMode() &&
-              this.renderSidebarItem("account", "icon-user", "Account", "18px")}
-            {!isSelfHostedMode() &&
-              this.renderSidebarItem("about", "icon-detail", "About", "18px")}
           </div>
 
           <hr className="setting-dialog-sidebar-divider" />
 
           {/* 第二组 */}
           <div className="setting-dialog-sidebar-group">
-            {!isSelfHostedMode() &&
-              this.renderSidebarItem(
-                "plugins",
-                "icon-internet",
-                "Plugins",
-                ""
-              )}
             {this.renderSidebarItem(
               "ai",
               "icon-idea-line",
@@ -240,26 +188,8 @@ class SettingDialog extends React.Component<
               <ShortcutSetting />
             ) : this.props.settingMode === "appearance" ? (
               <AppearanceSetting />
-            ) : this.props.settingMode === "sync" ? (
-              isSelfHostedMode() ? (
-                <GeneralSetting />
-              ) : (
-                <SyncSetting />
-              )
-            ) : this.props.settingMode === "account" ? (
-              isSelfHostedMode() ? (
-                <GeneralSetting />
-              ) : (
-                <AccountSetting />
-              )
             ) : this.props.settingMode === "data" ? (
               <DataSetting />
-            ) : this.props.settingMode === "about" ? (
-              isSelfHostedMode() ? (
-                <GeneralSetting />
-              ) : (
-                <AboutSetting />
-              )
             ) : this.props.settingMode === "ai" ? (
               <AISetting />
             ) : this.props.settingMode === "background" ? (
@@ -272,18 +202,6 @@ class SettingDialog extends React.Component<
               <TextSetting />
             ) : this.props.settingMode === "dict" ? (
               <DictSetting />
-            ) : this.props.settingMode === "more" ? (
-              isSelfHostedMode() ? (
-                <GeneralSetting />
-              ) : (
-                <MoreSetting />
-              )
-            ) : this.props.settingMode === "plugins" ? (
-              isSelfHostedMode() ? (
-                <GeneralSetting />
-              ) : (
-                <PluginSetting />
-              )
             ) : (
               <GeneralSetting />
             )}

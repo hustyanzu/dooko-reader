@@ -22,8 +22,6 @@ import {
   TokenService,
 } from "../../../assets/lib/kookit-extra-browser.min";
 import { changeLibrary, changePath } from "../../../utils/file/common";
-import { getSnapshots } from "../../../utils/file/backup";
-import { restoreFromSnapshot } from "../../../utils/file/restore";
 import {
   exportBooks,
   exportDictionaryHistory,
@@ -42,7 +40,6 @@ class DataSetting extends React.Component<SettingInfoProps, SettingInfoState> {
     super(props);
     this.state = {
       storageLocation: getStorageLocation() || "",
-      snapshotList: [],
       exportNotesFormat: "",
       exportHighlightsFormat: "",
       isEnableDiscordRPC:
@@ -72,12 +69,6 @@ class DataSetting extends React.Component<SettingInfoProps, SettingInfoState> {
       const status = await LocalFileManager.getPermissionStatus();
       this.setState({
         storageLocation: status.directoryName || "",
-        snapshotList: [],
-      });
-    }
-    if (isElectron) {
-      this.setState({
-        snapshotList: getSnapshots(),
       });
     }
   }
@@ -534,33 +525,7 @@ class DataSetting extends React.Component<SettingInfoProps, SettingInfoState> {
       }
     }
   };
-  handleRestoreSnapshot = async (event: any) => {
-    let targetFile = event.target.value;
-    if (!targetFile) {
-      return;
-    }
-    let confirm = await vexComfirmAsync(
-      this.props.t(
-        "Restoring from a snapshot will overwrite your current data. Are you sure you want to continue?"
-      )
-    );
-    if (!confirm) {
-      return;
-    }
-    let result = await restoreFromSnapshot(targetFile);
-    if (result) {
-      toast.success(this.props.t("Restore successful"), {
-        id: "restore-snapshot",
-      });
-      this.props.handleFetchBooks();
-      setTimeout(() => {
-        this.props.history.push("/manager/home");
-      }, 2000);
-    }
-    event.target.value = "";
-  };
-  render() {
-    return (
+  render() {    return (
       <>
         {this.renderSwitchOption(dataSettingList)}
         {this.renderNoteSyncOptions()}
@@ -646,45 +611,6 @@ class DataSetting extends React.Component<SettingInfoProps, SettingInfoState> {
             <div className="setting-dialog-location-title">
               {this.state.storageLocation}
             </div>
-          </>
-        )}
-        {isElectron && (
-          <>
-            <div className="setting-dialog-new-title">
-              <Trans>Restore from snapshots</Trans>
-              <select
-                name=""
-                className="lang-setting-dropdown"
-                onChange={this.handleRestoreSnapshot}
-              >
-                <option value={""} className="lang-setting-option">
-                  {this.props.t("Please select")}
-                </option>
-                {this.state.snapshotList
-                  .map((item) => {
-                    return {
-                      label: new Date(item.time).toLocaleString(),
-                      value: item.file,
-                    };
-                  })
-                  .map((item) => (
-                    <option
-                      value={item.value}
-                      key={item.value}
-                      className="lang-setting-option"
-                    >
-                      {item.label}
-                    </option>
-                  ))}
-              </select>
-            </div>
-            <p className="setting-option-subtitle">
-              <Trans>
-                {
-                  "Each time you open Koodo Reader, it automatically creates a snapshot of your library (excluding books and covers). You can use these snapshots to restore your library to a previous state. Please note that restoring from a snapshot will overwrite your current data"
-                }
-              </Trans>
-            </p>
           </>
         )}
         <div className="setting-dialog-new-title">

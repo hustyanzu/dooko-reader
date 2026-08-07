@@ -17,7 +17,6 @@ import toast from "react-hot-toast";
 import i18n from "../i18n";
 import {
   encryptToken,
-  getCloudSyncToken,
   refreshThirdToken,
 } from "./request/thirdparty";
 import {
@@ -29,7 +28,6 @@ import SyncService from "./storage/syncService";
 import localforage from "localforage";
 import { driveList } from "../constants/driveList";
 import { updateUserConfig } from "./request/user";
-import { isSelfHosted } from "./selfHosted";
 import { languageCNMap, languageENMap } from "../constants/ttsList";
 import { BookHelper } from "../assets/lib/kookit.min";
 import {
@@ -1386,54 +1384,6 @@ export const resetKoodoSync = async () => {
     });
   }, 1000);
 };
-export const handleAutoCloudSync = async () => {
-  if (await isSelfHosted()) {
-    return false;
-  }
-  let syncRes = await getCloudSyncToken();
-  if (
-    syncRes.code === 200 &&
-    syncRes.data.default_sync_option &&
-    syncRes.data.default_sync_option !== "icloud" &&
-    syncRes.data.default_sync_option !== "folder" &&
-    syncRes.data.default_sync_token
-  ) {
-    let supportedSources = driveList
-      .filter((item) => {
-        if (isElectron) {
-          return item.support.includes("desktop");
-        } else {
-          return item.support.includes("browser");
-        }
-      })
-      .map((item) => item.value);
-    if (!supportedSources.includes(syncRes.data.default_sync_option)) {
-      return false;
-    }
-    if (
-      !isElectron &&
-      (syncRes.data.default_sync_option === "webdav" ||
-        syncRes.data.default_sync_option === "s3compatible")
-    ) {
-      return false;
-    }
-    ConfigService.setItem(
-      "defaultSyncOption",
-      syncRes.data.default_sync_option
-    );
-    ConfigService.setReaderConfig("isEnableKoodoSync", "yes");
-    await TokenService.setToken(
-      syncRes.data.default_sync_option + "_token",
-      syncRes.data.default_sync_token
-    );
-    ConfigService.setListConfig(
-      syncRes.data.default_sync_option,
-      "dataSourceList"
-    );
-    return true;
-  }
-  return false;
-};
 export const detectLocalLanguage = (text: string): string => {
   const chinesePattern = /[\u4e00-\u9fff\u3000-\u303f\uf900-\ufaff]/g;
   const japanesePattern = /[\u3040-\u309f\u30a0-\u30ff]/g;
@@ -1674,40 +1624,6 @@ export const findLastMatchIndex = (a: string[], b: string[]) => {
   }
 
   return lastMatchIndex;
-};
-export const getICloudDrivePath = () => {
-  if (!isElectron) return "";
-  const fs = window.require("fs");
-  const path = window.require("path");
-  const os = window.require("os");
-
-  let iCloudPath = "";
-
-  // 自动检测iCloud Drive路径
-  if (isElectron && process.platform === "darwin") {
-    // macOS
-    const possiblePath = path.join(
-      os.homedir(),
-      "Library",
-      "Mobile Documents",
-      "iCloud~com~koodoreader~expo",
-      "Documents"
-    );
-    if (fs.existsSync(possiblePath)) {
-      iCloudPath = possiblePath;
-    }
-  }
-
-  // 如果自动检测失败，弹窗让用户手动选择
-  if (!iCloudPath || !fs.existsSync(iCloudPath)) {
-    return "";
-  }
-
-  // 验证路径是否有效
-  if (iCloudPath && fs.existsSync(iCloudPath)) {
-    return iCloudPath;
-  }
-  return "";
 };
 export const prepareThirdConfig = async (service: string, config: any) => {
   if (

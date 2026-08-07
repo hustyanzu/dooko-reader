@@ -5,7 +5,6 @@ import { SidebarProps, SidebarState } from "./interface";
 import { withRouter } from "react-router-dom";
 import { ConfigService } from "../../assets/lib/kookit-extra-browser.min";
 import { getWebsiteUrl, openInBrowser } from "../../utils/common";
-import { isSelfHostedMode } from "../../utils/selfHosted";
 import { Trans } from "react-i18next";
 import toast from "react-hot-toast";
 import {
@@ -391,16 +390,8 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
               ConfigService.getReaderConfig("appSkin") === "night" ||
               (ConfigService.getReaderConfig("appSkin") === "system" &&
                 ConfigService.getReaderConfig("isOSNight") === "yes")
-                ? require(
-                    `../../assets/images/logo-dark${
-                      this.props.isAuthed ? "-pro" : ""
-                    }.png`
-                  )
-                : require(
-                    `../../assets/images/logo-light${
-                      this.props.isAuthed ? "-pro" : ""
-                    }.png`
-                  )
+                ? require("../../assets/images/logo-dark.png")
+                : require("../../assets/images/logo-light.png")
             }
             alt=""
             onClick={() => {
@@ -560,49 +551,6 @@ class Sidebar extends React.Component<SidebarProps, SidebarState> {
               <ul className="side-shelf-container">{renderSideShelf()}</ul>
             )}
           </div>
-          {/* Stats button at the bottom */}
-          {!isSelfHostedMode() && (
-          <div className="side-menu-about" style={{ paddingBottom: 8 }}>
-            <div
-              className={"side-menu-selector"}
-              style={{ cursor: "pointer" }}
-              onClick={() => {
-                this.props.history.push("/stats");
-              }}
-            >
-              <div
-                className="side-menu-icon"
-                style={
-                  this.props.isCollapsed
-                    ? {}
-                    : { marginLeft: "20px", marginRight: "15px" }
-                }
-              >
-                <span
-                  className="icon-chart sidebar-shelf-icon"
-                  style={
-                    this.props.isCollapsed
-                      ? {
-                          position: "relative",
-                          marginLeft: "-0px",
-                          fontSize: 14,
-                        }
-                      : { fontSize: 14 }
-                  }
-                ></span>
-              </div>
-              <span
-                style={
-                  this.props.isCollapsed
-                    ? { display: "none", width: "70%" }
-                    : { width: "61%" }
-                }
-              >
-                {this.props.t("Reading Stats")}
-              </span>
-            </div>
-          </div>
-          )}
         </div>
       </>
     );

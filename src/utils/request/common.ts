@@ -19,19 +19,7 @@ let cachedPluginList: any[] | null = null;
 export const getPublicUrl = () => {
   return getServerRegion() === "china" ? CN_PUBLIC_URL : PUBLIC_URL;
 };
-export const checkDeveloperUpdate = async () => {
-  if (isSelfHostedMode()) {
-    return {};
-  }
-  let res = await axios.get(
-    getPublicUrl() + `/api/update_dev?name=${navigator.language}`
-  );
-  return res.data.log;
-};
 export const getPluginList = async () => {
-  if (isSelfHostedMode()) {
-    return [];
-  }
   if (cachedPluginList) {
     return cachedPluginList;
   }
@@ -53,15 +41,6 @@ export const uploadFile = async (url: string, file: any) => {
         resolve(false);
       });
   });
-};
-export const checkStableUpdate = async () => {
-  if (isSelfHostedMode()) {
-    return {};
-  }
-  let res = await axios.get(
-    getPublicUrl() + `/api/update?name=${navigator.language}`
-  );
-  return res.data.log;
 };
 export const handleExitApp = async () => {
   toast.error(i18n.t("Authorization failed, please login again"));
@@ -150,23 +129,6 @@ export const chatStream = async (
       reject(e);
     });
   });
-};
-export const getNotification = async (): Promise<any> => {
-  if (isSelfHostedMode()) {
-    return {};
-  }
-  let deviceUuid = await TokenService.getFingerprint();
-  const res = await axios.post(
-    "https://api.koodoreader.com/api/get_notification",
-    {
-      device_uuid: deviceUuid,
-    }
-  );
-  // {
-  // 	"result": "ok",
-  // 	"unread": 0
-  // }
-  return res;
 };
 export const parseWithSystemOCR = async (imageBase64: string) => {
   if (!isElectron) {
