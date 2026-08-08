@@ -403,6 +403,7 @@ export function handleFetchPlugins() {
           let isAuthed = value === "yes";
           if (
             isAuthed &&
+            !isSelfHostedMode() &&
             ConfigService.getReaderConfig("isDisableAI") !== "yes"
           ) {
             let dictPlugin = new PluginModel(

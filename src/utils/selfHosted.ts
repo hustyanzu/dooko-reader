@@ -77,6 +77,10 @@ export const ensureSelfHostedBinding = async (): Promise<void> => {
     SELF_HOSTED_SERVICE + "_token",
     JSON.stringify(binding)
   );
+  // Self-hosted deployments have no Koodo account, but the reading engine
+  // gates book download/upload on the is_authed token. Treat self-hosted
+  // users as authed so books can be opened, uploaded and covers synced.
+  await TokenService.setToken("is_authed", "yes");
   const dataSourceList =
     ConfigService.getAllListConfig("dataSourceList") || [];
   if (!dataSourceList.includes(SELF_HOSTED_SERVICE)) {
