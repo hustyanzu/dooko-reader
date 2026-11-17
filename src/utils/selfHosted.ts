@@ -117,6 +117,23 @@ export const clearWebAuth = (): void => {
   localStorage.removeItem(AUTH_COOKIE);
 };
 
+// 从服务器重建本站浏览器状态：清空 localStorage 与 IndexedDB 后重新加载。
+// 全新客户端在 bootstrap 时只会从服务器拉取，不会把旧记录推回覆盖服务器。
+export const resetLocalFromServer = async (): Promise<void> => {
+  localStorage.clear();
+  try {
+    const dbs = await indexedDB.databases();
+    for (const db of dbs) {
+      if (db.name) {
+        indexedDB.deleteDatabase(db.name);
+      }
+    }
+  } catch (error) {
+    console.error("Failed to delete IndexedDB databases:", error);
+  }
+  window.location.reload();
+};
+
 export const verifyWebPassword = async (password: string): Promise<boolean> => {
   const config = await getSelfHostedConfig();
   const expected = config?.password || "securePass123";

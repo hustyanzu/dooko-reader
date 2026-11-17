@@ -23,6 +23,10 @@ import {
   KOReaderUtil,
 } from "../../../assets/lib/kookit-extra-browser.min";
 import { changeLibrary, changePath } from "../../../utils/file/common";
+import {
+  isSelfHostedMode,
+  resetLocalFromServer,
+} from "../../../utils/selfHosted";
 import SwitchRow from "../../../components/readerSettings/switchRow";
 import {
   exportBooks,
@@ -578,6 +582,30 @@ const DataSetting = () => {
         {renderSwitchOption(dataSettingList)}
         {renderNoteSyncOptions()}
         {renderWordSyncOptions()}
+        {isSelfHostedMode() && (
+          <>
+            <div className="setting-dialog-new-title">
+              <Trans>Reset local data from server</Trans>
+              <span
+                className="change-location-button"
+                onClick={async () => {
+                  const confirm = await vexComfirmAsync(
+                    t("Reset local data from server") +
+                      "<br/><br/>" +
+                      t(
+                        "This clears the library cached in this browser and rebuilds it from the server. Data on the server is not modified. Use this when books added on other devices don't show up after syncing."
+                      )
+                  );
+                  if (confirm) {
+                    await resetLocalFromServer();
+                  }
+                }}
+              >
+                <Trans>Reset</Trans>
+              </span>
+            </div>
+          </>
+        )}
         {isElectron && (
           <>
             <div className="setting-dialog-new-title">

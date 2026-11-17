@@ -1183,5 +1183,7 @@
   "ISBN": "ISBN",
   "Enable auto reading": "自动阅读",
   "Auto scrolling speed": "自动阅读速度",
-  "Text to speech": "朗读"
+  "Text to speech": "朗读",
+  "Reset local data from server": "从服务器重置本地数据",
+  "This clears the library cached in this browser and rebuilds it from the server. Data on the server is not modified. Use this when books added on other devices don't show up after syncing.": "该操作会清空当前浏览器缓存的书库，并从服务器重新拉取，不会影响服务器上的数据。当其他设备新增的书籍同步后不显示时，可使用此功能修复。"
 }
