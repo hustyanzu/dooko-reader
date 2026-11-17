@@ -3,12 +3,8 @@ import "./settingDialog.css";
 import { useAppStore } from "../../../store/useAppStore";
 import { Trans } from "react-i18next";
 import GeneralSetting from "../../../containers/settings/generalSetting";
-import SyncSetting from "../../../containers/settings/syncSetting";
-import AccountSetting from "../../../containers/settings/accountSetting";
-import PluginSetting from "../../../containers/settings/pluginSetting";
 import ReadingSetting from "../../../containers/settings/readingSetting";
 import AppearanceSetting from "../../../containers/settings/appearanceSetting";
-import AboutSetting from "../../../containers/settings/aboutSetting";
 import DataSetting from "../../../containers/settings/dataSetting";
 import AISetting from "../../../containers/settings/aiSetting";
 import BackgroundSetting from "../../../containers/settings/backgroundSetting";
@@ -16,7 +12,6 @@ import FontSetting from "../../../containers/settings/fontSetting";
 import ChapterSetting from "../../../containers/settings/chapterSetting";
 import TextSetting from "../../../containers/settings/textSetting";
 import DictSetting from "../../../containers/settings/dictSetting";
-import MoreSetting from "../../../containers/settings/moreSetting";
 import ShortcutSetting from "../../../containers/settings/shortcutSetting";
 import { isElectron } from "react-device-detect";
 const SettingDialog = () => {
@@ -75,14 +70,6 @@ const SettingDialog = () => {
         return "Shortcuts";
       case "appearance":
         return "Appearance";
-      case "plugins":
-        return "Plugins";
-      case "sync":
-        return "Sync and backup";
-      case "account":
-        return "Account";
-      case "about":
-        return "About";
       case "ai":
         return "AI service";
       case "background":
@@ -95,8 +82,6 @@ const SettingDialog = () => {
         return "Text rules";
       case "dict":
         return "Local dictionary";
-      case "more":
-        return "More settings";
       default:
         return "Setting";
     }
@@ -112,7 +97,6 @@ const SettingDialog = () => {
 
           {/* First group */}
           <div className="setting-dialog-sidebar-group">
-            {renderSidebarItem("account", "icon-user", "Account", "18px")}
             {renderSidebarItem("general", "icon-setting", "General", "")}
             {renderSidebarItem("data", "icon-archive", "Data", "15px")}
             {renderSidebarItem(
@@ -133,22 +117,12 @@ const SettingDialog = () => {
               "Appearance",
               "20px"
             )}
-
-            {renderSidebarItem("sync", "icon-sync", "Sync and backup", "")}
-            {renderSidebarItem(
-              "more",
-              "icon-more",
-              "More settings",
-              "13px"
-            )}
-            {renderSidebarItem("about", "icon-detail", "About", "18px")}
           </div>
 
           <hr className="setting-dialog-sidebar-divider" />
 
           {/* Second group */}
           <div className="setting-dialog-sidebar-group">
-            {renderSidebarItem("plugins", "icon-internet", "Plugins", "")}
             {renderSidebarItem(
               "ai",
               "icon-idea-line",
@@ -214,14 +188,8 @@ const SettingDialog = () => {
               <ShortcutSetting />
             ) : settingMode === "appearance" ? (
               <AppearanceSetting />
-            ) : settingMode === "sync" ? (
-              <SyncSetting />
-            ) : settingMode === "account" ? (
-              <AccountSetting />
             ) : settingMode === "data" ? (
               <DataSetting />
-            ) : settingMode === "about" ? (
-              <AboutSetting />
             ) : settingMode === "ai" ? (
               <AISetting />
             ) : settingMode === "background" ? (
@@ -234,10 +202,8 @@ const SettingDialog = () => {
               <TextSetting />
             ) : settingMode === "dict" ? (
               <DictSetting />
-            ) : settingMode === "more" ? (
-              <MoreSetting />
             ) : (
-              <PluginSetting />
+              <GeneralSetting />
             )}
           </div>
         </div>

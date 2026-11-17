@@ -30,6 +30,7 @@ import { handleExitApp } from "../utils/request/common";
 import { HighlightValue, langToName } from "../utils/common";
 import toast from "react-hot-toast";
 import i18n from "../i18n";
+import { isSelfHostedMode } from "../utils/selfHosted";
 
 const collectionUtil = new CollectionUtil(ConfigService);
 const highlightUtil = new HighlightUtil(ConfigService);
@@ -225,7 +226,6 @@ export type AppActionName =
   | "handleFetchBooks"
   | "handleFetchDataSourceList"
   | "handleFetchDefaultSyncOption"
-  | "handleFetchLoginOptionList"
   | "handleFetchNoteSortCode"
   | "handleFetchNotes"
   | "handleFetchPercentage"
@@ -543,6 +543,10 @@ export const useAppStore = create<AppState>()((set, get) => {
       );
     },
     handleFetchUserInfo: async () => {
+      if (isSelfHostedMode()) {
+        get().handleUserInfo(null);
+        return null;
+      }
       let response = await fetchUserInfo();
       let userInfo: any = null;
       if (response.code === 200) {
@@ -1041,17 +1045,6 @@ export const useAppStore = create<AppState>()((set, get) => {
       let dataSourceList =
         ConfigService.getAllListConfig("dataSourceList") || [];
       get().handleDataSourceList(dataSourceList);
-    },
-    handleFetchLoginOptionList: async () => {
-      let loginOptionList: { email: string; provider: string }[] = [];
-      let userRequest = await getUserRequest();
-      let response = await userRequest.getLoginsV2();
-      if (response.code === 200) {
-        loginOptionList = response.data;
-      } else if (response.code === 401) {
-        handleExitApp();
-      }
-      get().handleLoginOptionList(loginOptionList);
     },
     handleFetchDefaultSyncOption: () => {
       let defaultSyncOption = ConfigService.getItem("defaultSyncOption") || "";

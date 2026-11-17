@@ -24,8 +24,6 @@ import {
 } from "../../../assets/lib/kookit-extra-browser.min";
 import { changeLibrary, changePath } from "../../../utils/file/common";
 import SwitchRow from "../../../components/readerSettings/switchRow";
-import { getSnapshots } from "../../../utils/file/backup";
-import { restoreFromSnapshot } from "../../../utils/file/restore";
 import {
   exportBooks,
   exportDictionaryHistory,
@@ -44,7 +42,6 @@ import { useAppStore } from "../../../store/useAppStore";
 
 export interface SettingInfoState {
   storageLocation: string;
-  snapshotList: { file: string; time: number }[];
   ttsCacheSize: string;
   tempCacheSize: string;
   allDataSize: string;
@@ -71,7 +68,6 @@ const DataSetting = () => {
   const navigate = useNavigate();
   const [state, setStateObj] = useState<SettingInfoState>(() => ({
     storageLocation: getStorageLocation() || "",
-    snapshotList: [],
     ttsCacheSize: "",
     tempCacheSize: "",
     allDataSize: "",
@@ -119,13 +115,9 @@ const DataSetting = () => {
         const status = await LocalFileManager.getPermissionStatus();
         setState({
           storageLocation: status.directoryName || "",
-          snapshotList: [],
         });
       }
       if (isElectron) {
-        setState({
-          snapshotList: getSnapshots(),
-        });
         loadCacheSizes();
       }
     };
@@ -563,31 +555,6 @@ const DataSetting = () => {
       }
     }
   };
-  const handleRestoreSnapshot = async (event: any) => {
-    let targetFile = event.target.value;
-    if (!targetFile) {
-      return;
-    }
-    let confirm = await vexComfirmAsync(
-      t(
-        "Restoring from a snapshot will overwrite your current data. Are you sure you want to continue?"
-      )
-    );
-    if (!confirm) {
-      return;
-    }
-    let result = await restoreFromSnapshot(targetFile);
-    if (result) {
-      toast.success(t("Restore successful"), {
-        id: "restore-snapshot",
-      });
-      handleFetchBooks();
-      setTimeout(() => {
-        navigate("/manager/home");
-      }, 2000);
-    }
-    event.target.value = "";
-  };
   const handleImportNotesData = async () => {
     const result = await importNotesData();
     if (result === "cancel" || result === "failed") {
@@ -692,45 +659,6 @@ const DataSetting = () => {
             <div className="setting-dialog-location-title">
               {stateRef.current.storageLocation}
             </div>
-          </>
-        )}
-        {isElectron && (
-          <>
-            <div className="setting-dialog-new-title">
-              <Trans>Restore from snapshots</Trans>
-              <select
-                name=""
-                className="lang-setting-dropdown"
-                onChange={handleRestoreSnapshot}
-              >
-                <option value={""} className="lang-setting-option">
-                  {t("Please select")}
-                </option>
-                {stateRef.current.snapshotList
-                  .map((item) => {
-                    return {
-                      label: new Date(item.time).toLocaleString(),
-                      value: item.file,
-                    };
-                  })
-                  .map((item) => (
-                    <option
-                      value={item.value}
-                      key={item.value}
-                      className="lang-setting-option"
-                    >
-                      {item.label}
-                    </option>
-                  ))}
-              </select>
-            </div>
-            <p className="setting-option-subtitle">
-              <Trans>
-                {
-                  "Each time you open Koodo Reader, it automatically creates a snapshot of your library (excluding books and covers). You can use these snapshots to restore your library to a previous state. Please note that restoring from a snapshot will overwrite your current data"
-                }
-              </Trans>
-            </p>
           </>
         )}
         <div className="setting-dialog-new-title">

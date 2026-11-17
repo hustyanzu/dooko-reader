@@ -36,7 +36,6 @@ import {
   isExternalFileDragEvent,
 } from "../../utils/reader/bookDrag";
 import Footer from "../../components/footer";
-import ProtectionOverlay from "../../components/protection";
 import { useAppStore } from "../../store/useAppStore";
 
 const collectionUtil = new CollectionUtil(ConfigService);
@@ -225,7 +224,6 @@ const Manager = () => {
         }
       }}
     >
-      <ProtectionOverlay />
       <Tooltip id="my-tooltip" style={{ zIndex: 25 }} />
       {isShowPopupNote && (
         <div

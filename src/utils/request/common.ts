@@ -12,16 +12,11 @@ import { resetUserRequest } from "./user";
 import { resetThirdpartyRequest } from "./thirdparty";
 import { isElectron } from "react-device-detect";
 import TokenService from "../storage/tokenService";
+import { isSelfHostedMode } from "../selfHosted";
 const PUBLIC_URL = "https://api.koodoreader.com";
 const CN_PUBLIC_URL = "https://api.koodoreader.cn";
 export const getPublicUrl = () => {
   return getServerRegion() === "china" ? CN_PUBLIC_URL : PUBLIC_URL;
-};
-export const checkDeveloperUpdate = async () => {
-  let res = await axios.get(
-    getPublicUrl() + `/api/update_dev?name=${navigator.language}`
-  );
-  return res.data.log;
 };
 export const uploadFile = async (url: string, file: any) => {
   return new Promise<boolean>((resolve) => {
@@ -36,14 +31,11 @@ export const uploadFile = async (url: string, file: any) => {
       });
   });
 };
-export const checkStableUpdate = async () => {
-  let res = await axios.get(
-    getPublicUrl() + `/api/update?name=${navigator.language}`
-  );
-  return res.data.log;
-};
 export const handleExitApp = async () => {
   toast.error(i18n.t("Authorization failed, please login again"));
+  if (isSelfHostedMode()) {
+    return;
+  }
   await handleClearToken();
   //路由到login页面
   reloadManager();
@@ -55,10 +47,15 @@ export const handleClearToken = async () => {
   let dataSourceList = ConfigService.getAllListConfig("dataSourceList") || [];
   for (let i = 0; i < dataSourceList.length; i++) {
     let targetDrive = dataSourceList[i];
+    if (isSelfHostedMode() && targetDrive === "docker") {
+      continue;
+    }
     await TokenService.setToken(targetDrive + "_token", "");
   }
-  ConfigService.removeItem("defaultSyncOption");
-  ConfigService.removeItem("dataSourceList");
+  if (!isSelfHostedMode()) {
+    ConfigService.removeItem("defaultSyncOption");
+    ConfigService.removeItem("dataSourceList");
+  }
   ConfigService.setReaderConfig("dictService", "");
   ConfigService.setReaderConfig("transService", "");
   ConfigService.setReaderConfig("aiService", "");
@@ -234,20 +231,6 @@ export const chatStream = async (
       }
     });
   });
-};
-export const getNotification = async () => {
-  let deviceUuid = await TokenService.getFingerprint();
-  const res = await axios.post(
-    "https://api.koodoreader.com/api/get_notification",
-    {
-      device_uuid: deviceUuid,
-    }
-  );
-  // {
-  // 	"result": "ok",
-  // 	"unread": 0
-  // }
-  return res;
 };
 export const llmReport = async (params: {
   answer: string;

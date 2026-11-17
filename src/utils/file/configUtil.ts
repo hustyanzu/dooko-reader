@@ -59,6 +59,27 @@ class ConfigUtil {
       return jsonStr;
     }
   }
+  // Web-only settings store, isolated from the shared config.json that
+  // other clients (e.g. the mobile app) sync. The reading engine never
+  // touches this file.
+  static async downloadWebConfig() {
+    let syncUtil = await SyncService.getSyncUtil();
+    let jsonBuffer: ArrayBuffer = await syncUtil.downloadFile(
+      "web-config.json",
+      "config"
+    );
+    if (!jsonBuffer) {
+      return "{}";
+    }
+    return new TextDecoder().decode(jsonBuffer);
+  }
+  static async uploadWebConfig(config: any) {
+    let syncUtil = await SyncService.getSyncUtil();
+    let configBlob = new Blob([JSON.stringify(config)], {
+      type: "application/json",
+    });
+    await syncUtil.uploadFile("web-config.json", "config", configBlob);
+  }
   static async uploadConfig(type: string) {
     let config = {};
     if (type === "sync") {

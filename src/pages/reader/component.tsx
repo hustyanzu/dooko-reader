@@ -29,7 +29,6 @@ import {
   updateDiscordPresence,
   clearDiscordPresence,
 } from "../../utils/reader/discordRPC";
-import SupportDialog from "../../components/dialogs/supportDialog";
 import ReaderTopToolbar from "../../components/readerTopToolbar";
 import { READING_PANEL_TOGGLE_EVENT } from "../../utils/reader/mouseEvent";
 import { isPaginatedBook, throttle } from "../../utils/common";
@@ -819,7 +818,6 @@ const Reader = () => {
         </KeepMounted>
       </div>
       {isAnnotationOpen && <AnnotationDialog />}
-      <SupportDialog />
       {isOpenPopupOptionDialog && (
         <>
           <PopupOptionDialog />

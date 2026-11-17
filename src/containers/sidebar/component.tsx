@@ -8,9 +8,7 @@ import { getWebsiteUrl, openInBrowser } from "../../utils/common";
 import { Trans } from "react-i18next";
 import toast from "react-hot-toast";
 import logoDark from "../../assets/images/logo-dark.png";
-import logoDarkPro from "../../assets/images/logo-dark-pro.png";
 import logoLight from "../../assets/images/logo-light.png";
-import logoLightPro from "../../assets/images/logo-light-pro.png";
 import {
   addBooksToFavorite,
   addBooksToShelf,
@@ -35,7 +33,6 @@ const Sidebar = () => {
   const mode = useAppStore((s) => s.sidebar.mode);
   const isCollapsed = useAppStore((s) => s.sidebar.isCollapsed);
   const shelfTitle = useAppStore((s) => s.sidebar.shelfTitle);
-  const isAuthed = useAppStore((s) => s.manager.isAuthed);
   const isOpenSortShelfDialog = useAppStore(
     (s) => s.backupPage.isOpenSortShelfDialog
   );
@@ -415,11 +412,7 @@ const Sidebar = () => {
             ConfigService.getReaderConfig("appSkin") === "night" ||
             (ConfigService.getReaderConfig("appSkin") === "system" &&
               ConfigService.getReaderConfig("isOSNight") === "yes")
-              ? isAuthed
-                ? logoDarkPro
-                : logoDark
-              : isAuthed
-              ? logoLightPro
+              ? logoDark
               : logoLight
           }
           alt=""
@@ -578,47 +571,6 @@ const Sidebar = () => {
           {!state.isCollpaseShelf && (
             <ul className="side-shelf-container">{renderSideShelf()}</ul>
           )}
-        </div>
-        {/* Stats button at the bottom */}
-        <div className="side-menu-about" style={{ paddingBottom: 8 }}>
-          <div
-            className={"side-menu-selector"}
-            style={{ cursor: "pointer" }}
-            onClick={() => {
-              navigate("/stats");
-            }}
-          >
-            <div
-              className="side-menu-icon"
-              style={
-                isCollapsed
-                  ? {}
-                  : { marginLeft: "20px", marginRight: "15px" }
-              }
-            >
-              <span
-                className="icon-chart sidebar-shelf-icon"
-                style={
-                  isCollapsed
-                    ? {
-                        position: "relative",
-                        marginLeft: "-0px",
-                        fontSize: 14,
-                      }
-                    : { fontSize: 14 }
-                }
-              ></span>
-            </div>
-            <span
-              style={
-                isCollapsed
-                  ? { display: "none", width: "70%" }
-                  : { width: "61%" }
-              }
-            >
-              {t("Reading Stats")}
-            </span>
-          </div>
         </div>
       </div>
     </>

@@ -1,0 +1,25 @@
+:7661 {
+    root * /usr/share/caddy
+
+    # Self-hosted backend API (proxied to the Go httpServer inside the container)
+    handle /upload {
+        reverse_proxy localhost:8080
+    }
+    handle /download {
+        reverse_proxy localhost:8080
+    }
+    handle /delete {
+        reverse_proxy localhost:8080
+    }
+    handle /list {
+        reverse_proxy localhost:8080
+    }
+    handle /opds {
+        reverse_proxy localhost:8080
+    }
+
+    # Static frontend
+    handle {
+        file_server
+    }
+}
